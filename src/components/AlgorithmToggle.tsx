@@ -31,7 +31,7 @@ const AlgorithmToggle = ({ algorithm, setAlgorithm }: AlgorithmToggleProps) => {
             onClick={() => setAlgorithm('classical')}
             className={`transition-all ${algorithm === 'classical' ? 'text-primary-foreground' : 'text-muted-foreground'}`}
           >
-            Classical
+            Classical - greedy
           </Button>
           <Button
             variant={algorithm === 'bruteForce' ? "default" : "ghost"}
