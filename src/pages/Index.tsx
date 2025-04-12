@@ -11,11 +11,11 @@ import AlgorithmToggle from '@/components/AlgorithmToggle';
 import PortfolioResults from '@/components/PortfolioResults';
 import AvengersHeader from '@/components/AvengersHeader';
 import { ExcelData, parseExcelFile } from '@/utils/excel-parser';
-import { PortfolioResult, classicalOptimization, quantumOptimization } from '@/utils/portfolio-optimizer';
+import { PortfolioResult, classicalOptimization, quantumOptimization, bruteForceOptimization } from '@/utils/portfolio-optimizer';
 
 const Index = () => {
   const [file, setFile] = useState<File | null>(null);
-  const [algorithm, setAlgorithm] = useState<'classical' | 'quantum'>('classical');
+  const [algorithm, setAlgorithm] = useState<'classical' | 'quantum' | 'bruteForce'>('classical');
   const [result, setResult] = useState<PortfolioResult | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast: uiToast } = useToast();
@@ -25,7 +25,7 @@ const Index = () => {
     setResult(null);
   };
 
-  const handleAlgorithmChange = (value: 'classical' | 'quantum') => {
+  const handleAlgorithmChange = (value: 'classical' | 'quantum' | 'bruteForce') => {
     setAlgorithm(value);
     setResult(null);
   };
@@ -41,9 +41,19 @@ const Index = () => {
       const data = await parseExcelFile(file);
       
       // Select algorithm based on user choice
-      const portfolioResult = algorithm === 'classical'
-        ? classicalOptimization(data)
-        : quantumOptimization(data);
+      let portfolioResult: PortfolioResult;
+      switch (algorithm) {
+        case 'bruteForce':
+          portfolioResult = bruteForceOptimization(data);
+          break;
+        case 'quantum':
+          portfolioResult = quantumOptimization(data);
+          break;
+        case 'classical':
+        default:
+          portfolioResult = classicalOptimization(data);
+          break;
+      }
       
       setResult(portfolioResult);
       toast.success('Portfolio optimization completed successfully!');

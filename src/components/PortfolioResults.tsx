@@ -9,7 +9,7 @@ import { Shield, Zap, Target } from 'lucide-react';
 
 interface PortfolioResultsProps {
   result: PortfolioResult | null;
-  algorithm: 'classical' | 'quantum';
+  algorithm: 'classical' | 'quantum' | 'bruteForce';
 }
 
 const PortfolioResults = ({ result, algorithm }: PortfolioResultsProps) => {
@@ -26,6 +26,30 @@ const PortfolioResults = ({ result, algorithm }: PortfolioResultsProps) => {
     weight: weight * 100, // Convert to percentage
   }));
 
+  // Get the algorithm display name and badge style
+  const getAlgorithmDisplay = () => {
+    switch (algorithm) {
+      case 'bruteForce':
+        return {
+          label: 'Brute Force Algorithm',
+          style: 'bg-avengers-green/10 text-avengers-green border-avengers-green/30'
+        };
+      case 'quantum':
+        return {
+          label: 'Quantum Algorithm (Fallback)',
+          style: 'bg-avengers-purple/10 text-avengers-purple border-avengers-purple/30'
+        };
+      case 'classical':
+      default:
+        return {
+          label: 'Classical Algorithm',
+          style: 'bg-avengers-blue/10 text-avengers-blue border-avengers-blue/30'
+        };
+    }
+  };
+
+  const algorithmDisplay = getAlgorithmDisplay();
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -35,11 +59,9 @@ const PortfolioResults = ({ result, algorithm }: PortfolioResultsProps) => {
         </div>
         <Badge 
           variant="outline" 
-          className={`font-medium ${algorithm === 'classical' 
-            ? 'bg-avengers-blue/10 text-avengers-blue border-avengers-blue/30' 
-            : 'bg-avengers-purple/10 text-avengers-purple border-avengers-purple/30'}`}
+          className={`font-medium ${algorithmDisplay.style}`}
         >
-          {algorithm === 'classical' ? 'Classical Algorithm' : 'Quantum Algorithm (Fallback)'}
+          {algorithmDisplay.label}
         </Badge>
       </div>
       

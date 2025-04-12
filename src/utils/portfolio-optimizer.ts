@@ -9,6 +9,28 @@ export interface PortfolioResult {
   processingTimeMs: number;
 }
 
+// Helper function to generate all combinations of indices
+const generateCombinations = (n: number, k: number): number[][] => {
+  const result: number[][] = [];
+  
+  // Recursive helper function to build combinations
+  const backtrack = (start: number, current: number[]) => {
+    if (current.length === k) {
+      result.push([...current]);
+      return;
+    }
+    
+    for (let i = start; i < n; i++) {
+      current.push(i);
+      backtrack(i + 1, current);
+      current.pop();
+    }
+  };
+  
+  backtrack(0, []);
+  return result;
+};
+
 export const classicalOptimization = (data: ExcelData): PortfolioResult => {
   const startTime = performance.now();
   
@@ -99,6 +121,69 @@ export const classicalOptimization = (data: ExcelData): PortfolioResult => {
   } catch (error) {
     console.error('Error in classical optimization:', error);
     throw new Error('Portfolio optimization failed. Please check your data.');
+  }
+};
+
+export const bruteForceOptimization = (data: ExcelData): PortfolioResult => {
+  const startTime = performance.now();
+  
+  try {
+    const { properties, correlationMatrix, propertyNames } = data;
+    
+    // Use correlation matrix as covariance matrix (assuming unit variances)
+    const covarianceMatrix = correlationMatrix;
+    const n = properties.length;
+    
+    // Define maximum number of assets to select (no more than 10% of total, minimum 1)
+    let maxCount = Math.floor(n * 0.1);
+    if (maxCount < 1) maxCount = 1;
+    
+    let bestVariance = Infinity;
+    let bestWeights: number[] = [];
+    let bestExpectedReturn = 0;
+    
+    // Iterate through all valid sizes (1 to maxCount)
+    for (let size = 1; size <= maxCount; size++) {
+      // Generate all combinations of 'size' assets from n assets
+      const combinations = generateCombinations(n, size);
+      
+      for (const combination of combinations) {
+        // Create binary weight vector
+        const weights = new Array(n).fill(0);
+        for (const idx of combination) {
+          weights[idx] = 1;
+        }
+        
+        // Calculate portfolio variance
+        const tempMultiply = math.multiply(weights, covarianceMatrix) as number[];
+        const variance = math.dot(tempMultiply, weights) as number;
+        
+        // If this combination has lower variance, store it
+        if (variance < bestVariance) {
+          bestVariance = variance;
+          bestWeights = [...weights];
+          
+          // Calculate expected return for the best combination
+          const returns = properties.map(p => p.expectedReturn);
+          bestExpectedReturn = math.dot(weights, returns) as number;
+        }
+      }
+    }
+    
+    const endTime = performance.now();
+    
+    return {
+      weights: propertyNames.map((name, i) => ({
+        property: name,
+        weight: bestWeights[i], // Binary value: 0 or 1
+      })),
+      expectedReturn: math.round(bestExpectedReturn * 10000) / 10000, // Round to 4 decimal places
+      variance: math.round(bestVariance * 10000) / 10000, // Round to 4 decimal places
+      processingTimeMs: math.round(endTime - startTime)
+    };
+  } catch (error) {
+    console.error('Error in brute force optimization:', error);
+    throw new Error('Brute force optimization failed. Please check your data.');
   }
 };
 
