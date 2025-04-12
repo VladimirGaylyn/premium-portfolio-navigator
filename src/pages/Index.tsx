@@ -14,18 +14,18 @@ import { ExcelData, parseExcelFile } from '@/utils/excel-parser';
 import { PortfolioResult, classicalOptimization, quantumOptimization } from '@/utils/portfolio-optimizer';
 
 const Index = () => {
-  const [file, setFile] = useState(null);
-  const [algorithm, setAlgorithm] = useState('classical');
-  const [result, setResult] = useState(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [algorithm, setAlgorithm] = useState<'classical' | 'quantum'>('classical');
+  const [result, setResult] = useState<PortfolioResult | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast: uiToast } = useToast();
 
-  const handleFileChange = (selectedFile) => {
+  const handleFileChange = (selectedFile: File) => {
     setFile(selectedFile);
     setResult(null);
   };
 
-  const handleAlgorithmChange = (value) => {
+  const handleAlgorithmChange = (value: 'classical' | 'quantum') => {
     setAlgorithm(value);
     setResult(null);
   };
@@ -52,7 +52,7 @@ const Index = () => {
       uiToast({
         variant: "destructive",
         title: "Optimization Failed",
-        description: error.message || "An error occurred during optimization"
+        description: error instanceof Error ? error.message : "An error occurred during optimization"
       });
     } finally {
       setIsProcessing(false);
@@ -78,7 +78,7 @@ const Index = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <FileUpload onFileChange={handleFileChange} />
+                <FileUpload onFileAccepted={handleFileChange} />
               </CardContent>
             </Card>
 
@@ -96,7 +96,7 @@ const Index = () => {
                 <div className="space-y-4">
                   <div>
                     <label className="text-sm font-medium mb-1.5 block">Algorithm Selection</label>
-                    <AlgorithmToggle value={algorithm} onValueChange={handleAlgorithmChange} />
+                    <AlgorithmToggle algorithm={algorithm} setAlgorithm={handleAlgorithmChange} />
                   </div>
                 </div>
               </CardContent>
