@@ -42,7 +42,7 @@ export const classicalOptimization = (data: ExcelData): PortfolioResult => {
     const n = properties.length;
     
     // Определяем максимальное количество выбираемых активов (не более 10% от общего количества, минимум 1)
-    let maxCount = Math.floor(n * 0.1);
+    let maxCount = Math.floor(n * 0.3);
     if (maxCount < 1) maxCount = 1;
     
     // Жадный алгоритм выбора активов для минимизации риска
