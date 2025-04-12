@@ -135,7 +135,7 @@ export const bruteForceOptimization = (data: ExcelData): PortfolioResult => {
     const n = properties.length;
     
     // Define maximum number of assets to select (no more than 10% of total, minimum 1)
-    let maxCount = Math.floor(n * 0.1);
+    let maxCount = Math.floor(n * 0.2);
     if (maxCount < 1) maxCount = 1;
     
     let bestVariance = Infinity;
