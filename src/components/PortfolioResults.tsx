@@ -85,7 +85,7 @@ const PortfolioResults = ({ result, algorithm }: PortfolioResultsProps) => {
                     domain={[0, 'dataMax + 5']}
                   />
                   <Tooltip 
-                    formatter={(value) => [`${value.toFixed(2)}%`, 'Weight']} 
+                    formatter={(value: number) => [`${value.toFixed(2)}%`, 'Weight']} 
                     labelFormatter={(label) => `Property: ${label}`}
                   />
                   <Bar dataKey="weight" name="Weight">
