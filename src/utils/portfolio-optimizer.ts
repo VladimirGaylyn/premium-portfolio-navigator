@@ -1,6 +1,5 @@
-
 import * as math from 'mathjs';
-import { ExcelData, Property } from './excel-parser';
+import { ExcelData } from './excel-parser';
 
 export interface PortfolioResult {
   weights: { property: string; weight: number }[];
@@ -11,56 +10,83 @@ export interface PortfolioResult {
 
 export const classicalOptimization = (data: ExcelData): PortfolioResult => {
   const startTime = performance.now();
-  
+
   try {
     const { properties, correlationMatrix, propertyNames } = data;
-    
-    // Treat correlation matrix as covariance matrix (assume unit variances)
+
+    // Используем матрицу корреляций как ковариационную (при условии единичных дисперсий)
     const covarianceMatrix = correlationMatrix;
-    
-    // Calculate minimum variance portfolio weights
-    // Formula: w = (Σ^-1 * 1) / (1^T * Σ^-1 * 1)
-    const invCovMatrix = math.inv(covarianceMatrix) as number[][];
-    const ones = Array(properties.length).fill(1);
-    
-    // Calculate Σ^-1 * 1
-    const numerator = math.multiply(invCovMatrix, ones) as number[];
-    
-    // Calculate 1^T * Σ^-1 * 1
-    const denominator = math.sum(numerator) as number;
-    
-    // Calculate weights
-    const weights = numerator.map(n => n / denominator);
-    
-    // Calculate expected portfolio return
+
+    const n = properties.length;
+    // Максимальное количество выбранных активов – не более 10% (хотя бы 1, если активов мало)
+    const maxAssets = Math.max(1, Math.floor(n * 0.1));
+
+    // Инициализируем бинарный вектор для выбора активов (0 – не выбран, 1 – выбран)
+    const selection: number[] = Array(n).fill(0);
+    // Массив для хранения индексов выбранных активов (для удобства вычислений)
+    const selectedIndices: number[] = [];
+    // Текущий риск портфеля (суммарное значение ковариаций по выбранным активам)
+    let currentRisk = 0;
+
+    // Жадный алгоритм: пошагово добавляем актив, минимизирующий прирост риска
+    while (selectedIndices.length < maxAssets) {
+      let bestAsset = -1;
+      let bestMarginalRisk = Infinity;
+
+      for (let i = 0; i < n; i++) {
+        if (selection[i] === 0) { // актив ещё не выбран
+          // Расчитываем прирост риска при добавлении актива i:
+          // Новый риск при S U {i} = текущий риск + 2*сумма(ковариаций актив i с уже выбранными) + ковариация самого актива (диагональный элемент)
+          let marginalRisk = covarianceMatrix[i][i]; // ковариация актива с самим собой (обычно равна 1)
+          for (const j of selectedIndices) {
+            marginalRisk += 2 * covarianceMatrix[i][j];
+          }
+
+          if (marginalRisk < bestMarginalRisk) {
+            bestMarginalRisk = marginalRisk;
+            bestAsset = i;
+          }
+        }
+      }
+
+      // Если актив найден, добавляем его
+      if (bestAsset !== -1) {
+        selection[bestAsset] = 1;
+        selectedIndices.push(bestAsset);
+        // Обновляем совокупный риск выбранного портфеля:
+        // При добавлении активa i риск увеличивается на bestMarginalRisk
+        currentRisk += bestMarginalRisk;
+      } else {
+        // Если никакой актив не найден (неожиданный случай), выходим из цикла
+        break;
+      }
+    }
+
+    // Расчёт ожидаемой доходности портфеля:
+    // Суммируем ожидаемые доходности для всех выбранных активов.
+    // (При бинарном выборе можно трактовать это как суммарную доходность; если нужно усреднить, можно поделить на количество выбранных активов.)
     const returns = properties.map(p => p.expectedReturn);
-    const expectedReturn = math.dot(weights, returns) as number;
-    
-    // Calculate portfolio variance
-    // Formula: Variance = w^T * Σ * w
-    const tempMultiply = math.multiply(weights, covarianceMatrix) as number[];
-    const variance = math.dot(tempMultiply, weights) as number;
-    
+    let expectedReturn = 0;
+    for (let i = 0; i < n; i++) {
+      if (selection[i] === 1) {
+        expectedReturn += returns[i];
+      }
+    }
+
     const endTime = performance.now();
-    
-    // Format result
+
     return {
       weights: propertyNames.map((name, i) => ({
         property: name,
-        weight: math.round(weights[i] * 100, 4) / 100, // Round to 2 decimal places
+        weight: selection[i] // значение 1 или 0
       })),
-      expectedReturn: math.round(expectedReturn * 10000) / 10000, // Round to 4 decimal places
-      variance: math.round(variance * 10000) / 10000, // Round to 4 decimal places
+      expectedReturn: math.round(expectedReturn * 10000) / 10000, // округление до 4 знаков после запятой
+      variance: math.round(currentRisk * 10000) / 10000,         // округление до 4 знаков после запятой
       processingTimeMs: math.round(endTime - startTime)
     };
+
   } catch (error) {
-    console.error('Error in classical optimization:', error);
+    console.error('Error in binary optimization:', error);
     throw new Error('Portfolio optimization failed. Please check your data.');
   }
-};
-
-export const quantumOptimization = (data: ExcelData): PortfolioResult => {
-  // This is a placeholder that falls back to classical optimization
-  // In a real implementation, this would use quantum algorithms
-  return classicalOptimization(data);
 };
