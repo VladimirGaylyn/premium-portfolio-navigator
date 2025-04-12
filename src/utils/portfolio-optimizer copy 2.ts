@@ -1,8 +1,9 @@
+
 import * as math from 'mathjs';
 import { ExcelData, Property } from './excel-parser';
 
 export interface PortfolioResult {
-  weights: { property: string; weight: number }[];
+  weights: { property: string; weight: number; expectedReturn: number }[];
   expectedReturn: number;
   variance: number;
   processingTimeMs: number;
@@ -36,19 +37,19 @@ export const classicalOptimization = (data: ExcelData): PortfolioResult => {
   try {
     const { properties, correlationMatrix, propertyNames } = data;
     
-    // Use correlation matrix as covariance matrix (assuming unit variances)
+    // Используем матрицу корреляций как ковариационную (при предположении единичных дисперсий)
     const covarianceMatrix = correlationMatrix;
     const n = properties.length;
     
-    // Define maximum number of assets to select (20% of total, minimum 1)
+    // Определяем максимальное количество выбираемых активов (не более 10% от общего количества, минимум 1)
     let maxCount = Math.floor(n * 0.2);
     if (maxCount < 1) maxCount = 1;
     
-    // Greedy selection to minimize risk
+    // Жадный алгоритм выбора активов для минимизации риска
     const selectedIndices: number[] = [];
     const remainingIndices = Array.from({ length: n }, (_, i) => i);
     
-    // Step 1: choose asset with the lowest individual variance (cov[i][i])
+    // Шаг 1: Выбираем актив с минимальной индивидуальной дисперсией (cov[i][i])
     let bestIndex = remainingIndices[0];
     let minVariance = covarianceMatrix[bestIndex][bestIndex];
     for (let i of remainingIndices) {
@@ -58,9 +59,14 @@ export const classicalOptimization = (data: ExcelData): PortfolioResult => {
       }
     }
     selectedIndices.push(bestIndex);
-    remainingIndices.splice(remainingIndices.indexOf(bestIndex), 1);
+    // Удаляем выбранный индекс из оставшихся
+    const indexToRemove = remainingIndices.indexOf(bestIndex);
+    if (indexToRemove > -1) {
+      remainingIndices.splice(indexToRemove, 1);
+    }
     
-    // Step 2: iteratively add the asset that gives the lowest additional risk
+    // Шаг 2: Итеративно добавляем актив, минимизирующий прирост риска
+    // Прирост риска для добавления актива i = covarianceMatrix[i][i] + 2 * сумма(covarianceMatrix[i][j]) для всех j в выбранном наборе
     while (selectedIndices.length < maxCount && remainingIndices.length > 0) {
       let candidateIndex: number | null = null;
       let candidateAdditionalRisk = Infinity;
@@ -78,31 +84,26 @@ export const classicalOptimization = (data: ExcelData): PortfolioResult => {
       
       if (candidateIndex !== null) {
         selectedIndices.push(candidateIndex);
-        remainingIndices.splice(remainingIndices.indexOf(candidateIndex), 1);
+        const idx = remainingIndices.indexOf(candidateIndex);
+        if (idx > -1) {
+          remainingIndices.splice(idx, 1);
+        }
       } else {
         break;
       }
     }
     
-    // Create a binary weight vector of size n, but then normalize it
+    // Формируем бинарный вектор весов: 1 для выбранных активов, 0 для остальных
     const weights = new Array(n).fill(0);
     for (let idx of selectedIndices) {
       weights[idx] = 1;
     }
-
-    const sumSelected = selectedIndices.length;
-    if (sumSelected > 0) {
-      // Normalize so that sum of weights = 1
-      for (let i = 0; i < n; i++) {
-        weights[i] = weights[i] / sumSelected;
-      }
-    }
     
-    // Calculate expected return = sum(w_i * r_i)
+    // Рассчитываем ожидаемую доходность = сумма(weight * expectedReturn) для каждого актива
     const returns = properties.map(p => p.expectedReturn);
     const expectedReturn = math.dot(weights, returns) as number;
     
-    // Calculate portfolio variance = w^T * covarianceMatrix * w
+    // Рассчитываем риск портфеля = w^T * covarianceMatrix * w
     const tempMultiply = math.multiply(weights, covarianceMatrix) as number[];
     const variance = math.dot(tempMultiply, weights) as number;
     
@@ -111,10 +112,11 @@ export const classicalOptimization = (data: ExcelData): PortfolioResult => {
     return {
       weights: propertyNames.map((name, i) => ({
         property: name,
-        weight: math.round(weights[i] * 10000) / 10000,
+        weight: weights[i], // Бинарное значение: 0 или 1
+        expectedReturn: properties[i].expectedReturn
       })),
-      expectedReturn: math.round(expectedReturn * 10000) / 10000,
-      variance: math.round(variance * 10000) / 10000,
+      expectedReturn: math.round(expectedReturn * 10000) / 10000, // Округление до 4 знаков
+      variance: math.round(variance * 10000) / 10000, // Округление до 4 знаков
       processingTimeMs: math.round(endTime - startTime)
     };
   } catch (error) {
@@ -133,7 +135,7 @@ export const bruteForceOptimization = (data: ExcelData): PortfolioResult => {
     const covarianceMatrix = correlationMatrix;
     const n = properties.length;
     
-    // Define maximum number of assets to select (20% of total, minimum 1)
+    // Define maximum number of assets to select (no more than 10% of total, minimum 1)
     let maxCount = Math.floor(n * 0.2);
     if (maxCount < 1) maxCount = 1;
     
@@ -143,19 +145,14 @@ export const bruteForceOptimization = (data: ExcelData): PortfolioResult => {
     
     // Iterate through all valid sizes (1 to maxCount)
     for (let size = 1; size <= maxCount; size++) {
-      // Generate all combinations of 'size' assets out of n
+      // Generate all combinations of 'size' assets from n assets
       const combinations = generateCombinations(n, size);
       
       for (const combination of combinations) {
-        // Create a binary weight vector
+        // Create binary weight vector
         const weights = new Array(n).fill(0);
         for (const idx of combination) {
           weights[idx] = 1;
-        }
-        
-        // Normalize so the sum of weights = 1 (i.e., each selected asset weight = 1/size)
-        for (let i = 0; i < n; i++) {
-          weights[i] = weights[i] / size;
         }
         
         // Calculate portfolio variance
@@ -167,7 +164,7 @@ export const bruteForceOptimization = (data: ExcelData): PortfolioResult => {
           bestVariance = variance;
           bestWeights = [...weights];
           
-          // Calculate expected return for this combination
+          // Calculate expected return for the best combination
           const returns = properties.map(p => p.expectedReturn);
           bestExpectedReturn = math.dot(weights, returns) as number;
         }
@@ -179,10 +176,11 @@ export const bruteForceOptimization = (data: ExcelData): PortfolioResult => {
     return {
       weights: propertyNames.map((name, i) => ({
         property: name,
-        weight: math.round(bestWeights[i] * 10000) / 10000,
+        weight: bestWeights[i], // Binary value: 0 or 1
+        expectedReturn: properties[i].expectedReturn
       })),
-      expectedReturn: math.round(bestExpectedReturn * 10000) / 10000,
-      variance: math.round(bestVariance * 10000) / 10000,
+      expectedReturn: math.round(bestExpectedReturn * 10000) / 10000, // Round to 4 decimal places
+      variance: math.round(bestVariance * 10000) / 10000, // Round to 4 decimal places
       processingTimeMs: math.round(endTime - startTime)
     };
   } catch (error) {
@@ -192,7 +190,7 @@ export const bruteForceOptimization = (data: ExcelData): PortfolioResult => {
 };
 
 export const quantumOptimization = (data: ExcelData): PortfolioResult => {
-  // This is a placeholder function that just calls the classical algorithm.
-  // In a real-world scenario, quantum algorithms would be used here.
+  // Это заглушка, которая использует классический алгоритм.
+  // В реальной реализации здесь применялись бы квантовые алгоритмы.
   return classicalOptimization(data);
 };
