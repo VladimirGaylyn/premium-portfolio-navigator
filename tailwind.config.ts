@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -19,6 +18,9 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				'avengers': ['"Roboto Condensed"', 'sans-serif'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -69,6 +71,14 @@ export default {
 					lightBlue: '#4d8fc9',
 					gray: '#6b7280',
 					lightGray: '#f3f4f6'
+				},
+				avengers: {
+					red: '#E23636',    // Iron Man/Avengers logo red
+					gold: '#F0B323',   // Iron Man gold
+					blue: '#0F4D92',   // Captain America blue
+					darkBlue: '#1D1E33', // Dark background
+					silver: '#C0C0C0', // Metal/tech accents
+					green: '#3D8B37'   // Hulk green
 				}
 			},
 			borderRadius: {
