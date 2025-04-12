@@ -1,172 +1,163 @@
+
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
+import { Shield, Upload, Calculator, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Play, RefreshCw, Upload } from 'lucide-react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import FileUpload from '@/components/FileUpload';
 import AlgorithmToggle from '@/components/AlgorithmToggle';
 import PortfolioResults from '@/components/PortfolioResults';
+import AvengersHeader from '@/components/AvengersHeader';
 import { ExcelData, parseExcelFile } from '@/utils/excel-parser';
 import { PortfolioResult, classicalOptimization, quantumOptimization } from '@/utils/portfolio-optimizer';
+
 const Index = () => {
-  const {
-    toast
-  } = useToast();
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [excelData, setExcelData] = useState<ExcelData | null>(null);
-  const [algorithm, setAlgorithm] = useState<'classical' | 'quantum'>('classical');
+  const [file, setFile] = useState(null);
+  const [algorithm, setAlgorithm] = useState('classical');
+  const [result, setResult] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [portfolioResult, setPortfolioResult] = useState<PortfolioResult | null>(null);
-  const [activeTab, setActiveTab] = useState('upload');
-  const handleFileAccepted = (file: File) => {
-    setUploadedFile(file);
-    setExcelData(null);
-    setPortfolioResult(null);
+  const { toast: uiToast } = useToast();
+
+  const handleFileChange = (selectedFile) => {
+    setFile(selectedFile);
+    setResult(null);
   };
-  const parseFile = async () => {
-    if (!uploadedFile) {
-      toast({
-        title: "No File Selected",
-        description: "Please upload an Excel file before processing.",
-        variant: "destructive"
-      });
+
+  const handleAlgorithmChange = (value) => {
+    setAlgorithm(value);
+    setResult(null);
+  };
+
+  const handleProcess = async () => {
+    if (!file) {
+      toast.error('Please upload an Excel file first');
       return;
     }
-    setIsProcessing(true);
-    try {
-      const data = await parseExcelFile(uploadedFile);
-      setExcelData(data);
-      toast({
-        title: "File Parsed Successfully",
-        description: `Found ${data.properties.length} properties with returns and correlation data.`,
-        variant: "default"
-      });
-      return data;
-    } catch (error) {
-      console.error('Error parsing file:', error);
-      toast({
-        title: "Error Parsing File",
-        description: error instanceof Error ? error.message : "Failed to parse the Excel file. Please check the format.",
-        variant: "destructive"
-      });
-      return null;
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-  const processPortfolio = async () => {
-    let data = excelData;
-    if (!data) {
-      data = await parseFile();
-      if (!data) return;
-    }
-    setIsProcessing(true);
-    try {
-      // Run the appropriate optimization algorithm
-      const result = algorithm === 'classical' ? classicalOptimization(data) : quantumOptimization(data);
-      setPortfolioResult(result);
-      toast({
-        title: "Portfolio Optimized",
-        description: `Optimization completed in ${result.processingTimeMs}ms.`,
-        variant: "default"
-      });
 
-      // Switch to the results tab
-      setActiveTab('results');
+    setIsProcessing(true);
+    try {
+      const data = await parseExcelFile(file);
+      
+      // Select algorithm based on user choice
+      const portfolioResult = algorithm === 'classical'
+        ? classicalOptimization(data)
+        : quantumOptimization(data);
+      
+      setResult(portfolioResult);
+      toast.success('Portfolio optimization completed successfully!');
     } catch (error) {
-      console.error('Error optimizing portfolio:', error);
-      toast({
+      console.error('Optimization error:', error);
+      uiToast({
+        variant: "destructive",
         title: "Optimization Failed",
-        description: error instanceof Error ? error.message : "An error occurred during portfolio optimization.",
-        variant: "destructive"
+        description: error.message || "An error occurred during optimization"
       });
     } finally {
       setIsProcessing(false);
     }
   };
-  return <div className="container mx-auto p-4 md:p-6 max-w-screen-xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-insurance-blue">YALE Hackathon 2025: Capgemini - Hartford</h1>
-        <p className="text-muted-foreground mt-2">
-          Upload your Excel file with property returns and correlations to calculate an optimal portfolio.
-        </p>
-      </div>
+
+  return (
+    <div className="min-h-screen pb-10">
+      <AvengersHeader />
       
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {/* Sidebar */}
-        <div className="md:col-span-1 space-y-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Controls</CardTitle>
-              <CardDescription>Manage your optimization process</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <AlgorithmToggle algorithm={algorithm} setAlgorithm={setAlgorithm} />
-              
-              <Separator className="my-2" />
-              
-              <div className="space-y-2">
-                <Button onClick={processPortfolio} disabled={isProcessing || !uploadedFile} className="w-full">
-                  {isProcessing ? <>
-                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+      <div className="avengers-container">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          {/* Sidebar with Controls */}
+          <div className="lg:col-span-2 space-y-6">
+            <Card className="avengers-card overflow-visible shield-bg">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Upload className="h-5 w-5 text-avengers-red" />
+                  <CardTitle>Data Upload</CardTitle>
+                </div>
+                <CardDescription>
+                  Upload your Excel file containing Returns and Correlation data
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <FileUpload onFileChange={handleFileChange} />
+              </CardContent>
+            </Card>
+
+            <Card className="avengers-card-alt overflow-visible">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Zap className="h-5 w-5 text-avengers-gold" />
+                  <CardTitle>Optimization Settings</CardTitle>
+                </div>
+                <CardDescription>
+                  Select algorithm type and processing options
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium mb-1.5 block">Algorithm Selection</label>
+                    <AlgorithmToggle value={algorithm} onValueChange={handleAlgorithmChange} />
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button 
+                  className="avengers-button w-full"
+                  onClick={handleProcess} 
+                  disabled={!file || isProcessing}
+                >
+                  {isProcessing ? (
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       Processing...
-                    </> : <>
-                      <Play className="mr-2 h-4 w-4" />
-                      Process Data
-                    </>}
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Calculator className="h-4 w-4" />
+                      Run Optimization
+                    </div>
+                  )}
                 </Button>
-                
-                <Button variant="outline" onClick={() => setActiveTab('upload')} className="w-full">
-                  <Upload className="mr-2 h-4 w-4" />
-                  Upload New File
-                </Button>
-              </div>
-              
-              {uploadedFile && <div className="text-sm space-y-1 mt-4">
-                  <p className="font-medium">Current File:</p>
-                  <p className="text-muted-foreground truncate">{uploadedFile.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {(uploadedFile.size / 1024).toFixed(2)} KB
+              </CardFooter>
+            </Card>
+          </div>
+
+          {/* Main Content Area */}
+          <div className="lg:col-span-3">
+            {result ? (
+              <PortfolioResults result={result} algorithm={algorithm} />
+            ) : (
+              <div className="h-full flex items-center justify-center p-10">
+                <div className="text-center max-w-md">
+                  <div className="mx-auto w-16 h-16 mb-4 relative">
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-r from-avengers-red via-avengers-blue to-avengers-gold p-[3px]">
+                      <div className="h-full w-full rounded-full bg-card flex items-center justify-center">
+                        <Shield className="h-8 w-8 text-white avengers-glow" />
+                      </div>
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-bold mb-2">Avengers Portfolio Optimizer</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Upload your property data and run the optimization to generate the ideal portfolio allocation.
                   </p>
-                </div>}
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">About</CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm">
-              <p className="text-muted-foreground">
-                This tool uses Markowitz portfolio theory to calculate the minimum variance portfolio based on your property returns and correlation data.
-              </p>
-              <p className="text-muted-foreground mt-2">
-                The quantum option is a demonstration feature that currently falls back to classical methods.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-        
-        {/* Main Content */}
-        <div className="md:col-span-3">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="mb-4">
-              <TabsTrigger value="upload">Upload Data</TabsTrigger>
-              <TabsTrigger value="results" disabled={!portfolioResult}>Results</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="upload" className="mt-0">
-              <FileUpload onFileAccepted={handleFileAccepted} />
-            </TabsContent>
-            
-            <TabsContent value="results" className="mt-0">
-              <PortfolioResults result={portfolioResult} algorithm={algorithm} />
-            </TabsContent>
-          </Tabs>
+                  <div className="grid grid-cols-2 gap-4 text-center text-sm">
+                    <div className="p-3 rounded-lg bg-muted/20 border border-border/50">
+                      <div className="text-avengers-red font-semibold">Step 1</div>
+                      <div className="text-muted-foreground">Upload Excel File</div>
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted/20 border border-border/50">
+                      <div className="text-avengers-blue font-semibold">Step 2</div>
+                      <div className="text-muted-foreground">Run Optimization</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default Index;
