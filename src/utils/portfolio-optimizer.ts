@@ -3,7 +3,7 @@ import * as math from 'mathjs';
 import { ExcelData, Property } from './excel-parser';
 
 export interface PortfolioResult {
-  weights: { property: string; weight: number }[];
+  weights: { property: string; weight: number; expectedReturn: number }[];
   expectedReturn: number;
   variance: number;
   processingTimeMs: number;
@@ -113,6 +113,7 @@ export const classicalOptimization = (data: ExcelData): PortfolioResult => {
       weights: propertyNames.map((name, i) => ({
         property: name,
         weight: weights[i], // Бинарное значение: 0 или 1
+        expectedReturn: properties[i].expectedReturn
       })),
       expectedReturn: math.round(expectedReturn * 10000) / 10000, // Округление до 4 знаков
       variance: math.round(variance * 10000) / 10000, // Округление до 4 знаков
@@ -176,6 +177,7 @@ export const bruteForceOptimization = (data: ExcelData): PortfolioResult => {
       weights: propertyNames.map((name, i) => ({
         property: name,
         weight: bestWeights[i], // Binary value: 0 or 1
+        expectedReturn: properties[i].expectedReturn
       })),
       expectedReturn: math.round(bestExpectedReturn * 10000) / 10000, // Round to 4 decimal places
       variance: math.round(bestVariance * 10000) / 10000, // Round to 4 decimal places

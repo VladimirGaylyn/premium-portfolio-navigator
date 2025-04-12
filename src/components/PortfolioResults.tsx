@@ -20,11 +20,13 @@ const PortfolioResults = ({ result, algorithm }: PortfolioResultsProps) => {
   // Sort weights from highest to lowest for better visualization
   const sortedWeights = [...weights].sort((a, b) => b.weight - a.weight);
   
-  // Prepare data for chart
-  const chartData = sortedWeights.map(({ property, weight }) => ({
-    name: property,
-    weight: weight * 100, // Convert to percentage
-  }));
+  // Prepare data for chart - ONLY include properties with non-zero weights
+  const chartData = sortedWeights
+    .filter(({ weight }) => weight > 0)
+    .map(({ property, weight }) => ({
+      name: property,
+      weight: weight * 100, // Convert to percentage
+    }));
 
   // Get the algorithm display name and badge style
   const getAlgorithmDisplay = () => {
@@ -174,14 +176,18 @@ const PortfolioResults = ({ result, algorithm }: PortfolioResultsProps) => {
               <thead>
                 <tr className="border-b border-border/50">
                   <th className="text-left py-2 font-medium text-muted-foreground">Property</th>
+                  <th className="text-right py-2 font-medium text-muted-foreground">Expected Return</th>
                   <th className="text-right py-2 font-medium text-muted-foreground">Weight</th>
                   <th className="text-right py-2 font-medium text-muted-foreground">Allocation %</th>
                 </tr>
               </thead>
               <tbody>
-                {sortedWeights.map(({ property, weight }, index) => (
+                {sortedWeights.map(({ property, weight, expectedReturn }, index) => (
                   <tr key={property} className={`border-b border-border/30 hover:bg-muted/20 ${index % 2 === 0 ? 'bg-muted/10' : ''}`}>
                     <td className="py-2 text-left">{property}</td>
+                    <td className="py-2 text-right font-mono text-avengers-gold">
+                      {(expectedReturn * 100).toFixed(2)}%
+                    </td>
                     <td className="py-2 text-right font-mono text-avengers-blue">{weight.toFixed(4)}</td>
                     <td className={`py-2 text-right font-mono ${
                       weight > 0.5 ? 'text-avengers-red' : 
