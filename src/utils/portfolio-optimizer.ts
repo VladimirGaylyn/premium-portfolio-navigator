@@ -1,3 +1,4 @@
+
 import * as math from 'mathjs';
 import { ExcelData } from './excel-parser';
 
@@ -89,4 +90,11 @@ export const classicalOptimization = (data: ExcelData): PortfolioResult => {
     console.error('Error in binary optimization:', error);
     throw new Error('Portfolio optimization failed. Please check your data.');
   }
+};
+
+// Add the missing quantumOptimization function
+export const quantumOptimization = (data: ExcelData): PortfolioResult => {
+  // This is a fallback implementation that uses the classical algorithm
+  // In a real implementation, this would use quantum algorithms
+  return classicalOptimization(data);
 };
