@@ -144,7 +144,7 @@ export const bruteForceOptimization = (data: ExcelData): PortfolioResult => {
     let bestExpectedReturn = 0;
     
     // Перебираем все допустимые размеры комбинаций (от 1 до maxCount)
-    for (let size = 1; size <= maxCount; size++) {
+    for (let size = 2; size <= maxCount; size++) {
       // Генерируем все комбинации из 'size' активов из n
       const combinations = generateCombinations(n, size);
       
