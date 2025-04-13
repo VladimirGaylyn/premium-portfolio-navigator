@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { PortfolioResult } from '@/utils/portfolio-optimizer';
-import { Shield, Zap, Target } from 'lucide-react';
+import { Shield, Zap, Target, AlertTriangle } from 'lucide-react';
 
 interface PortfolioResultsProps {
   result: PortfolioResult | null;
@@ -177,16 +177,25 @@ const PortfolioResults = ({ result, algorithm }: PortfolioResultsProps) => {
                 <tr className="border-b border-border/50">
                   <th className="text-left py-2 font-medium text-muted-foreground">Property</th>
                   <th className="text-right py-2 font-medium text-muted-foreground">Expected Return</th>
+                  <th className="text-right py-2 font-medium text-muted-foreground">
+                    <div className="flex items-center justify-end gap-1">
+                      <AlertTriangle className="h-3.5 w-3.5 text-avengers-red" />
+                      Risk
+                    </div>
+                  </th>
                   <th className="text-right py-2 font-medium text-muted-foreground">Weight</th>
                   <th className="text-right py-2 font-medium text-muted-foreground">Allocation %</th>
                 </tr>
               </thead>
               <tbody>
-                {sortedWeights.map(({ property, weight, expectedReturn }, index) => (
+                {sortedWeights.map(({ property, weight, expectedReturn, risk }, index) => (
                   <tr key={property} className={`border-b border-border/30 hover:bg-muted/20 ${index % 2 === 0 ? 'bg-muted/10' : ''}`}>
                     <td className="py-2 text-left">{property}</td>
                     <td className="py-2 text-right font-mono text-avengers-green">
                       {(expectedReturn * 100).toFixed(2)}%
+                    </td>
+                    <td className="py-2 text-right font-mono text-avengers-red">
+                      {risk.toFixed(4)}
                     </td>
                     <td className="py-2 text-right font-mono text-avengers-blue">{weight.toFixed(4)}</td>
                     <td className={`py-2 text-right font-mono ${
