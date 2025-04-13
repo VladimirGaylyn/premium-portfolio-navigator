@@ -1,3 +1,4 @@
+
 import * as XLSX from 'xlsx';
 
 export interface Property {
@@ -7,7 +8,7 @@ export interface Property {
 
 export interface ExcelData {
   properties: Property[];
-  covarianceMatrix: number[][];  // Изменено название поля на covarianceMatrix
+  correlationMatrix: number[][];
   propertyNames: string[];
 }
 
@@ -20,15 +21,15 @@ export const parseExcelFile = (file: File): Promise<ExcelData> => {
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
         const workbook = XLSX.read(data, { type: 'array' });
         
-        // Проверяем наличие требуемых листов: "Returns" и "Covariance"
-        if (!workbook.SheetNames.includes('Returns') || !workbook.SheetNames.includes('Covariance')) {
-          reject(new Error('Excel file must contain both "Returns" and "Covariance" sheets'));
+        // Check if required sheets exist
+        if (!workbook.SheetNames.includes('Returns') || !workbook.SheetNames.includes('Correlation')) {
+          reject(new Error('Excel file must contain both "Returns" and "Correlation" sheets'));
           return;
         }
         
-        // Парсим лист Returns
+        // Parse Returns sheet
         const returnsSheet = workbook.Sheets['Returns'];
-        const returnsData = XLSX.utils.sheet_to_json<{ Property: string; 'Expected Return': number }>(returnsSheet);
+        const returnsData = XLSX.utils.sheet_to_json<{Property: string; 'Expected Return': number}>(returnsSheet);
         
         if (returnsData.length === 0) {
           reject(new Error('Returns sheet is empty or improperly formatted'));
@@ -42,27 +43,27 @@ export const parseExcelFile = (file: File): Promise<ExcelData> => {
         
         const propertyNames = properties.map(p => p.name);
         
-        // Парсим лист Covariance
-        const covarianceSheet = workbook.Sheets['Covariance'];
-        const covarianceData = XLSX.utils.sheet_to_json(covarianceSheet);
+        // Parse Correlation sheet
+        const correlationSheet = workbook.Sheets['Correlation'];
+        const correlationData = XLSX.utils.sheet_to_json(correlationSheet);
         
-        if (covarianceData.length === 0 || covarianceData.length !== properties.length) {
-          reject(new Error('Covariance matrix is empty or does not match the number of properties'));
+        if (correlationData.length === 0 || correlationData.length !== properties.length) {
+          reject(new Error('Correlation matrix is empty or does not match the number of properties'));
           return;
         }
         
-        // Извлекаем матрицу ковариаций (предполагается, что первый столбец содержит имена активов)
-        const covarianceMatrix = covarianceData.map(row => {
-          const rowData = Object.values(row).slice(1); // Пропускаем первый столбец (имя активa)
+        // Extract correlation matrix, assuming first column contains property names
+        const correlationMatrix = correlationData.map(row => {
+          const rowData = Object.values(row).slice(1); // Skip first column (property name)
           if (rowData.length !== properties.length) {
-            throw new Error('Covariance matrix is not square or does not match the number of properties');
+            throw new Error('Correlation matrix is not square or does not match the number of properties');
           }
           return rowData.map(value => Number(value));
         });
         
         resolve({
           properties,
-          covarianceMatrix,
+          correlationMatrix,
           propertyNames
         });
       } catch (error) {
