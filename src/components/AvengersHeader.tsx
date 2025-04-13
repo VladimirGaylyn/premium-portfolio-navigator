@@ -1,26 +1,15 @@
-
 import React from 'react';
-
 const AvengersHeader = () => {
-  return (
-    <header className="py-6 mb-8">
+  return <header className="py-6 mb-8">
       <div className="avengers-container">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center gap-3 mb-4 md:mb-0">
             <div className="p-1 rounded-full">
-              <img 
-                src="/lovable-uploads/15d691f2-db4b-4621-bf84-0900293313fb.png" 
-                alt="Proof that Tony Stark has a heart" 
-                className="h-12 w-12 object-cover"
-              />
+              <img src="/lovable-uploads/15d691f2-db4b-4621-bf84-0900293313fb.png" alt="Proof that Tony Stark has a heart" className="h-12 w-12 object-cover" />
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight avengers-title">
-                Avengers Portfolio Optimizer
-              </h1>
-              <p className="text-muted-foreground text-sm">
-                Assemble your optimal portfolio with our advanced optimization algorithms
-              </p>
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight avengers-title">The Avengers Portfolio Optimizer</h1>
+              <p className="text-muted-foreground text-sm">YQuantum: The Hartford and Capgemini’s Quantum Lab</p>
             </div>
           </div>
           <div className="flex items-center space-x-2 text-sm">
@@ -31,8 +20,6 @@ const AvengersHeader = () => {
           </div>
         </div>
       </div>
-    </header>
-  );
+    </header>;
 };
-
 export default AvengersHeader;
