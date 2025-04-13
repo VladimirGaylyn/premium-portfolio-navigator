@@ -41,7 +41,7 @@ export const classicalOptimization = (data: ExcelData): PortfolioResult => {
     
     // Определяем максимальное число активов для выбора (20% от общего количества, минимум 1)
     let maxCount = Math.floor(n * 0.2);
-    if (maxCount < 1) maxCount = 1;
+    if (maxCount < 1) maxCount = 2;
     
     // Жадный алгоритм для минимизации риска
     const selectedIndices: number[] = [];
@@ -137,7 +137,7 @@ export const bruteForceOptimization = (data: ExcelData): PortfolioResult => {
     
     // Определяем максимальное число активов для выбора (20% от общего количества, минимум 1)
     let maxCount = Math.floor(n * 0.2);
-    if (maxCount < 1) maxCount = 1;
+    if (maxCount < 1) maxCount = 2;
     
     let bestVariance = Infinity;
     let bestWeights: number[] = [];
