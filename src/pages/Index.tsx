@@ -11,6 +11,8 @@ import PortfolioResults from '@/components/PortfolioResults';
 import AvengersHeader from '@/components/AvengersHeader';
 import { ExcelData, parseExcelFile } from '@/utils/excel-parser';
 import { PortfolioResult, classicalOptimization, quantumOptimization, bruteForceOptimization } from '@/utils/portfolio-optimizer';
+import { Link } from "react-router-dom";
+
 const Index = () => {
   const [file, setFile] = useState<File | null>(null);
   const [algorithm, setAlgorithm] = useState<'classical' | 'quantum' | 'bruteForce'>('classical');
@@ -19,14 +21,17 @@ const Index = () => {
   const {
     toast: uiToast
   } = useToast();
+
   const handleFileChange = (selectedFile: File) => {
     setFile(selectedFile);
     setResult(null);
   };
+
   const handleAlgorithmChange = (value: 'classical' | 'quantum' | 'bruteForce') => {
     setAlgorithm(value);
     setResult(null);
   };
+
   const handleProcess = async () => {
     if (!file) {
       toast.error('Please upload an Excel file first');
@@ -36,7 +41,6 @@ const Index = () => {
     try {
       const data = await parseExcelFile(file);
 
-      // Select algorithm based on user choice
       let portfolioResult: PortfolioResult;
       switch (algorithm) {
         case 'bruteForce':
@@ -63,12 +67,12 @@ const Index = () => {
       setIsProcessing(false);
     }
   };
+
   return <div className="min-h-screen pb-10">
       <AvengersHeader />
       
       <div className="avengers-container">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* Sidebar with Controls */}
           <div className="lg:col-span-2 space-y-6">
             <Card className="avengers-card overflow-visible shield-bg">
               <CardHeader>
@@ -117,7 +121,6 @@ const Index = () => {
             </Card>
           </div>
 
-          {/* Main Content Area */}
           <div className="lg:col-span-3">
             {result ? <PortfolioResults result={result} algorithm={algorithm} /> : <div className="h-full flex items-center justify-center p-10">
                 <div className="text-center max-w-md">
@@ -153,4 +156,5 @@ const Index = () => {
       </div>
     </div>;
 };
+
 export default Index;

@@ -1,3 +1,4 @@
+
 import * as math from 'mathjs';
 import { ExcelData, Property } from './excel-parser';
 
@@ -65,15 +66,38 @@ const computePortfolioStats = (indices: number[], data: ExcelData) => {
   return { variance, expectedReturn };
 };
 
+// Get portfolio options from localStorage or use defaults
+const getPortfolioOptions = () => {
+  try {
+    const storedOptions = localStorage.getItem("portfolioOptions");
+    if (storedOptions) {
+      return JSON.parse(storedOptions);
+    }
+  } catch (error) {
+    console.error("Error loading portfolio options:", error);
+  }
+  
+  // Default options
+  return {
+    minAssets: 2,
+    maxAssetsPercentage: 20
+  };
+};
+
 export const classicalOptimization = (data: ExcelData): PortfolioResult => {
   const startTime = performance.now();
 
   try {
     const { properties, covarianceMatrix, propertyNames } = data;
     const n = properties.length;
+    
+    // Get user-configured options
+    const options = getPortfolioOptions();
+    const minAssets = options.minAssets || 2;
+    const maxAssetsPercentage = options.maxAssetsPercentage || 20;
 
-    // Determine the maximum number of assets to select (20% of total, minimum 2)
-    const maxCount = Math.max(2, Math.floor(n * 0.2));
+    // Determine the maximum number of assets to select (percentage of total, minimum is minAssets)
+    const maxCount = Math.max(minAssets, Math.floor(n * maxAssetsPercentage / 100));
 
     // We'll build our selected set greedily based on the combined score = variance - expectedReturn.
     let selectedIndices: number[] = [];
@@ -114,6 +138,12 @@ export const classicalOptimization = (data: ExcelData): PortfolioResult => {
       } else {
         break;
       }
+    }
+
+    // Ensure we meet the minimum asset requirement
+    if (selectedIndices.length < minAssets && remainingIndices.length > 0) {
+      const addCount = Math.min(minAssets - selectedIndices.length, remainingIndices.length);
+      selectedIndices.push(...remainingIndices.slice(0, addCount));
     }
 
     // Now we have our selectedIndices. Compute final stats.
@@ -157,16 +187,21 @@ export const bruteForceOptimization = (data: ExcelData): PortfolioResult => {
     const { properties, covarianceMatrix, propertyNames } = data;
     const n = properties.length;
 
-    // Determine the maximum number of assets to select (20% of total, minimum 2)
-    const maxCount = Math.max(2, Math.floor(n * 0.2));
+    // Get user-configured options
+    const options = getPortfolioOptions();
+    const minAssets = options.minAssets || 2;
+    const maxAssetsPercentage = options.maxAssetsPercentage || 20;
+
+    // Determine the maximum number of assets to select (percentage of total, minimum is minAssets)
+    const maxCount = Math.max(minAssets, Math.floor(n * maxAssetsPercentage / 100));
 
     let bestScore = Infinity;
     let bestVariance = Infinity;
     let bestReturn = 0;
     let bestWeights: number[] = [];
 
-    // Iterate over all valid combination sizes (from 2 to maxCount)
-    for (let size = 2; size <= maxCount; size++) {
+    // Iterate over all valid combination sizes (from minAssets to maxCount)
+    for (let size = minAssets; size <= maxCount; size++) {
       const combos = generateCombinations(n, size);
 
       for (const combo of combos) {
@@ -216,9 +251,7 @@ export const bruteForceOptimization = (data: ExcelData): PortfolioResult => {
 };
 
 /**
- * Placeholder for quantumOptimization. 
- * For demonstration, this just calls the new classical approach 
- * that balances both risk and return in a single score.
+ * Quantum optimization (currently a placeholder that uses the improved classical approach).
  */
 export const quantumOptimization = (data: ExcelData): PortfolioResult => {
   return classicalOptimization(data);
