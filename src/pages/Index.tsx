@@ -12,6 +12,8 @@ import AvengersHeader from '@/components/AvengersHeader';
 import { ExcelData, parseExcelFile } from '@/utils/excel-parser';
 import { PortfolioResult, classicalOptimization, quantumOptimization, bruteForceOptimization } from '@/utils/portfolio-optimizer';
 import { Link } from "react-router-dom";
+import { Settings } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -21,6 +23,7 @@ const Index = () => {
   const {
     toast: uiToast
   } = useToast();
+  const navigate = useNavigate();
 
   const handleFileChange = (selectedFile: File) => {
     setFile(selectedFile);
@@ -68,8 +71,19 @@ const Index = () => {
     }
   };
 
-  return <div className="min-h-screen pb-10">
+  return (
+    <div className="container mx-auto py-6">
       <AvengersHeader />
+      
+      <div className="flex justify-end mb-4">
+        <Button 
+          variant="outline" 
+          onClick={() => navigate("/setup")}
+          className="flex items-center gap-2"
+        >
+          <Settings size={16} /> Portfolio Settings
+        </Button>
+      </div>
       
       <div className="avengers-container">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
@@ -154,7 +168,8 @@ const Index = () => {
           </div>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
 
 export default Index;
