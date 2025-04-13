@@ -11,34 +11,31 @@ import PortfolioResults from '@/components/PortfolioResults';
 import AvengersHeader from '@/components/AvengersHeader';
 import { ExcelData, parseExcelFile } from '@/utils/excel-parser';
 import { PortfolioResult, classicalOptimization, quantumOptimization, bruteForceOptimization } from '@/utils/portfolio-optimizer';
-
 const Index = () => {
   const [file, setFile] = useState<File | null>(null);
   const [algorithm, setAlgorithm] = useState<'classical' | 'quantum' | 'bruteForce'>('classical');
   const [result, setResult] = useState<PortfolioResult | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const { toast: uiToast } = useToast();
-
+  const {
+    toast: uiToast
+  } = useToast();
   const handleFileChange = (selectedFile: File) => {
     setFile(selectedFile);
     setResult(null);
   };
-
   const handleAlgorithmChange = (value: 'classical' | 'quantum' | 'bruteForce') => {
     setAlgorithm(value);
     setResult(null);
   };
-
   const handleProcess = async () => {
     if (!file) {
       toast.error('Please upload an Excel file first');
       return;
     }
-
     setIsProcessing(true);
     try {
       const data = await parseExcelFile(file);
-      
+
       // Select algorithm based on user choice
       let portfolioResult: PortfolioResult;
       switch (algorithm) {
@@ -53,7 +50,6 @@ const Index = () => {
           portfolioResult = classicalOptimization(data);
           break;
       }
-      
       setResult(portfolioResult);
       toast.success('Portfolio optimization completed successfully!');
     } catch (error) {
@@ -67,9 +63,7 @@ const Index = () => {
       setIsProcessing(false);
     }
   };
-
-  return (
-    <div className="min-h-screen pb-10">
+  return <div className="min-h-screen pb-10">
       <AvengersHeader />
       
       <div className="avengers-container">
@@ -110,22 +104,14 @@ const Index = () => {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button 
-                  className="avengers-button w-full"
-                  onClick={handleProcess} 
-                  disabled={!file || isProcessing}
-                >
-                  {isProcessing ? (
-                    <div className="flex items-center gap-2">
+                <Button className="avengers-button w-full" onClick={handleProcess} disabled={!file || isProcessing}>
+                  {isProcessing ? <div className="flex items-center gap-2">
                       <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       Processing...
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
+                    </div> : <div className="flex items-center gap-2">
                       <Calculator className="h-4 w-4" />
                       Run Optimization
-                    </div>
-                  )}
+                    </div>}
                 </Button>
               </CardFooter>
             </Card>
@@ -133,15 +119,16 @@ const Index = () => {
 
           {/* Main Content Area */}
           <div className="lg:col-span-3">
-            {result ? (
-              <PortfolioResults result={result} algorithm={algorithm} />
-            ) : (
-              <div className="h-full flex items-center justify-center p-10">
+            {result ? <PortfolioResults result={result} algorithm={algorithm} /> : <div className="h-full flex items-center justify-center p-10">
                 <div className="text-center max-w-md">
                   <div className="mx-auto w-16 h-16 mb-4 relative">
                     <div className="absolute inset-0 rounded-full bg-gradient-to-r from-avengers-red via-avengers-blue to-avengers-gold p-[3px]">
-                      <div className="h-full w-full rounded-full bg-card flex items-center justify-center" style={{ backgroundImage: `url(/lovable-uploads/d67a6a41-87ad-4ce2-939a-a1a30d52c695.png)`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-                        <Shield className="h-8 w-8 text-white avengers-glow" />
+                      <div className="h-full w-full rounded-full bg-card flex items-center justify-center" style={{
+                    backgroundImage: `url(/lovable-uploads/d67a6a41-87ad-4ce2-939a-a1a30d52c695.png)`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center'
+                  }}>
+                        
                       </div>
                     </div>
                   </div>
@@ -160,13 +147,10 @@ const Index = () => {
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              </div>}
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
