@@ -1,3 +1,4 @@
+
 import * as math from 'mathjs';
 import { ExcelData, Property } from './excel-parser';
 
@@ -34,18 +35,19 @@ export const classicalOptimization = (data: ExcelData): PortfolioResult => {
   const startTime = performance.now();
   
   try {
-    // Extract properties, covariance matrix, and property names
+    // Извлекаем свойства, матрицу ковариаций и имена свойств
     const { properties, covarianceMatrix, propertyNames } = data;
     const n = properties.length;
     
-    // Determine the maximum number of assets to select (20% of total, minimum 2)
-    const maxCount = Math.max(2, Math.floor(n * 0.2));
+    // Определяем максимальное число активов для выбора (20% от общего количества, минимум 1)
+    let maxCount = Math.floor(n * 0.2);
+    if (maxCount < 1) maxCount = 2;
     
-    // Greedy algorithm for minimizing risk
+    // Жадный алгоритм для минимизации риска
     const selectedIndices: number[] = [];
     const remainingIndices = Array.from({ length: n }, (_, i) => i);
     
-    // Step 1: select the asset with the lowest variance (cov[i][i])
+    // Шаг 1: выбираем актив с наименьшей дисперсией (cov[i][i])
     let bestIndex = remainingIndices[0];
     let minVariance = covarianceMatrix[bestIndex][bestIndex];
     for (let i of remainingIndices) {
@@ -57,7 +59,7 @@ export const classicalOptimization = (data: ExcelData): PortfolioResult => {
     selectedIndices.push(bestIndex);
     remainingIndices.splice(remainingIndices.indexOf(bestIndex), 1);
     
-    // Step 2: iteratively add the asset that minimizes additional risk
+    // Шаг 2: итеративно добавляем актив, который минимизирует дополнительный риск
     while (selectedIndices.length < maxCount && remainingIndices.length > 0) {
       let candidateIndex: number | null = null;
       let candidateAdditionalRisk = Infinity;
@@ -81,7 +83,7 @@ export const classicalOptimization = (data: ExcelData): PortfolioResult => {
       }
     }
     
-    // Create a binary weight vector of size n then normalize it
+    // Создаем бинарный вектор весов размером n, затем нормализуем его
     const weights = new Array(n).fill(0);
     for (let idx of selectedIndices) {
       weights[idx] = 1;
@@ -89,17 +91,17 @@ export const classicalOptimization = (data: ExcelData): PortfolioResult => {
 
     const sumSelected = selectedIndices.length;
     if (sumSelected > 0) {
-      // Normalize so that the total weight equals 1
+      // Нормировка так, чтобы сумма весов была равна 1
       for (let i = 0; i < n; i++) {
         weights[i] = weights[i] / sumSelected;
       }
     }
     
-    // Calculate expected return = sum(w_i * r_i)
+    // Вычисляем ожидаемую доходность = сумма(w_i * r_i)
     const returns = properties.map(p => p.expectedReturn);
     const expectedReturn = math.dot(weights, returns) as number;
     
-    // Calculate portfolio variance = w^T * covarianceMatrix * w
+    // Вычисляем дисперсию портфеля = w^T * covarianceMatrix * w
     const tempMultiply = math.multiply(weights, covarianceMatrix) as number[];
     const variance = math.dot(tempMultiply, weights) as number;
     
@@ -129,44 +131,45 @@ export const bruteForceOptimization = (data: ExcelData): PortfolioResult => {
   const startTime = performance.now();
   
   try {
-    // Extract properties, covariance matrix, and property names
+    // Извлекаем свойства, матрицу ковариаций и имена свойств
     const { properties, covarianceMatrix, propertyNames } = data;
     const n = properties.length;
     
-    // Determine the maximum number of assets to select (20% of total, minimum 2)
-    const maxCount = Math.max(2, Math.floor(n * 0.2));
+    // Определяем максимальное число активов для выбора (20% от общего количества, минимум 1)
+    let maxCount = Math.floor(n * 0.2);
+    if (maxCount < 1) maxCount = 2;
     
     let bestVariance = Infinity;
     let bestWeights: number[] = [];
     let bestExpectedReturn = 0;
     
-    // Iterate over all valid combination sizes (from 2 to maxCount)
+    // Перебираем все допустимые размеры комбинаций (от 1 до maxCount)
     for (let size = 2; size <= maxCount; size++) {
-      // Generate all combinations of 'size' assets out of n
+      // Генерируем все комбинации из 'size' активов из n
       const combinations = generateCombinations(n, size);
       
       for (const combination of combinations) {
-        // Create a binary weight vector
+        // Создаем бинарный вектор весов
         const weights = new Array(n).fill(0);
         for (const idx of combination) {
           weights[idx] = 1;
         }
         
-        // Normalize so that the total weight equals 1 (each selected asset gets weight 1/size)
+        // Нормируем так, чтобы сумма весов = 1 (каждому выбранному активу назначается вес 1/size)
         for (let i = 0; i < n; i++) {
           weights[i] = weights[i] / size;
         }
         
-        // Calculate portfolio variance
+        // Вычисляем дисперсию портфеля
         const tempMultiply = math.multiply(weights, covarianceMatrix) as number[];
         const variance = math.dot(tempMultiply, weights) as number;
         
-        // If this combination has a lower variance, save it
+        // Если эта комбинация имеет меньшую дисперсию, сохраняем её
         if (variance < bestVariance) {
           bestVariance = variance;
           bestWeights = [...weights];
           
-          // Calculate expected return for this combination
+          // Вычисляем ожидаемую доходность для этой комбинации
           const returns = properties.map(p => p.expectedReturn);
           bestExpectedReturn = math.dot(weights, returns) as number;
         }
@@ -196,7 +199,7 @@ export const bruteForceOptimization = (data: ExcelData): PortfolioResult => {
 };
 
 export const quantumOptimization = (data: ExcelData): PortfolioResult => {
-  // Placeholder – this currently calls the classical optimization.
-  // In real scenarios, you could implement quantum algorithms here.
+  // Заглушка – здесь вызывается классическая оптимизация.
+  // В реальных сценариях можно внедрить квантовые алгоритмы.
   return classicalOptimization(data);
 };
