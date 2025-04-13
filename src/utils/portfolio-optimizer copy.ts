@@ -1,5 +1,6 @@
+
 import * as math from 'mathjs';
-import { ExcelData, Property } from './excel-parser';
+import { ExcelData, Property } from './excel-parser copy';
 
 export interface PortfolioResult {
   weights: { property: string; weight: number; risk: number }[];
@@ -12,9 +13,10 @@ export const classicalOptimization = (data: ExcelData): PortfolioResult => {
   const startTime = performance.now();
   
   try {
-    const { properties, correlationMatrix: covarianceMatrix, propertyNames } = data;
+    const { properties, correlationMatrix, propertyNames } = data;
     
     // Используем матрицу корреляций как ковариационную (при предположении единичных дисперсий)
+    const covarianceMatrix = correlationMatrix;
     const n = properties.length;
     
     // Определяем максимальное количество выбираемых активов (не более 10% от общего количества, минимум 1)

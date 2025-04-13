@@ -9,8 +9,8 @@ const AvengersHeader = () => {
           <div className="flex items-center gap-3 mb-4 md:mb-0">
             <div className="p-1 rounded-full">
               <img 
-                src="/lovable-uploads/e4a295f9-a54b-4b79-8715-a5042604d841.png" 
-                alt="Tony Stark's Arc Reactor" 
+                src="/lovable-uploads/b55c93f4-824d-4b98-b05d-cd28bf6ea6cc.png" 
+                alt="Proof that Tony Stark has a heart" 
                 className="h-12 w-12 object-cover"
               />
             </div>
