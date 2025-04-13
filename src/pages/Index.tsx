@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Shield, Upload, Calculator, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -141,7 +140,7 @@ const Index = () => {
                 <div className="text-center max-w-md">
                   <div className="mx-auto w-16 h-16 mb-4 relative">
                     <div className="absolute inset-0 rounded-full bg-gradient-to-r from-avengers-red via-avengers-blue to-avengers-gold p-[3px]">
-                      <div className="h-full w-full rounded-full bg-card flex items-center justify-center">
+                      <div className="h-full w-full rounded-full bg-card flex items-center justify-center" style={{ backgroundImage: `url(/lovable-uploads/d67a6a41-87ad-4ce2-939a-a1a30d52c695.png)`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
                         <Shield className="h-8 w-8 text-white avengers-glow" />
                       </div>
                     </div>
