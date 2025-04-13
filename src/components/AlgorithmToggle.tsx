@@ -25,9 +25,7 @@ const AlgorithmToggle = ({
         <span className="text-sm font-medium mr-2">Algorithm:</span>
         <div className="flex flex-wrap bg-muted rounded-md p-1 gap-1">
           <Button variant={algorithm === 'classical' ? "default" : "ghost"} size="sm" onClick={() => setAlgorithm('classical')} className={`transition-all ${algorithm === 'classical' ? 'text-primary-foreground' : 'text-muted-foreground'}`}>Greedy</Button>
-          <Button variant={algorithm === 'bruteForce' ? "default" : "ghost"} size="sm" onClick={() => setAlgorithm('bruteForce')} className={`transition-all ${algorithm === 'bruteForce' ? 'text-primary-foreground' : 'text-muted-foreground'}`}>
-            Brute Force
-          </Button>
+          <Button variant={algorithm === 'bruteForce' ? "default" : "ghost"} size="sm" onClick={() => setAlgorithm('bruteForce')} className={`transition-all ${algorithm === 'bruteForce' ? 'text-primary-foreground' : 'text-muted-foreground'}`}>Classical</Button>
           <Button variant={algorithm === 'quantum' ? "default" : "ghost"} size="sm" onClick={handleQuantumToggle} className={`transition-all ${algorithm === 'quantum' ? 'text-primary-foreground' : 'text-muted-foreground'}`}>
             Quantum
           </Button>
