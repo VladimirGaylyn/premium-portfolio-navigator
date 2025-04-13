@@ -84,7 +84,7 @@ const PortfolioResults = ({ result, algorithm }: PortfolioResultsProps) => {
                   <Zap className="h-3.5 w-3.5 text-avengers-green" />
                   Expected Return
                 </dt>
-                <dd className="text-2xl font-bold text-avengers-green">{(expectedReturn * 100).toFixed(2)}%</dd>
+                <dd className="text-2xl font-bold text-avengers-green">{expectedReturn.toFixed(4)}</dd>
               </div>
               <div>
                 <dt className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
@@ -192,7 +192,7 @@ const PortfolioResults = ({ result, algorithm }: PortfolioResultsProps) => {
                   <tr key={property} className={`border-b border-border/30 hover:bg-muted/20 ${index % 2 === 0 ? 'bg-muted/10' : ''}`}>
                     <td className="py-2 text-left">{property}</td>
                     <td className="py-2 text-right font-mono text-avengers-green">
-                      {(expectedReturn * 100).toFixed(2)}%
+                      {expectedReturn.toFixed(4)}
                     </td>
                     <td className="py-2 text-right font-mono text-avengers-red">
                       {risk.toFixed(4)}
