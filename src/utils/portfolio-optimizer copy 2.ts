@@ -34,10 +34,9 @@ export const classicalOptimization = (data: ExcelData): PortfolioResult => {
   const startTime = performance.now();
   
   try {
-    const { properties, correlationMatrix, propertyNames } = data;
+    const { properties, correlationMatrix: covarianceMatrix, propertyNames } = data;
     
     // Используем матрицу корреляций как ковариационную (при предположении единичных дисперсий)
-    const covarianceMatrix = correlationMatrix;
     const n = properties.length;
     
     // Определяем максимальное количество выбираемых активов (не более 10% от общего количества, минимум 1)
@@ -132,10 +131,9 @@ export const bruteForceOptimization = (data: ExcelData): PortfolioResult => {
   const startTime = performance.now();
   
   try {
-    const { properties, correlationMatrix, propertyNames } = data;
+    const { properties, correlationMatrix: covarianceMatrix, propertyNames } = data;
     
     // Use correlation matrix as covariance matrix (assuming unit variances)
-    const covarianceMatrix = correlationMatrix;
     const n = properties.length;
     
     // Define maximum number of assets to select (no more than 10% of total, minimum 1)
