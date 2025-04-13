@@ -2,7 +2,7 @@ import * as math from 'mathjs';
 import { ExcelData, Property } from './excel-parser';
 
 export interface PortfolioResult {
-  weights: { property: string; weight: number }[];
+  weights: { property: string; weight: number; risk: number }[];
   expectedReturn: number;
   variance: number;
   processingTimeMs: number;
@@ -70,6 +70,9 @@ export const classicalOptimization = (data: ExcelData): PortfolioResult => {
       }
     }
     
+    // Calculate individual property risks (standard deviation from covariance matrix diagonal)
+    const propertyRisks = covarianceMatrix.map((row, i) => Math.sqrt(row[i]));
+    
     // Формируем бинарный вектор весов: 1 для выбранных активов, 0 для остальных
     const weights = new Array(n).fill(0);
     for (let idx of selectedIndices) {
@@ -90,6 +93,7 @@ export const classicalOptimization = (data: ExcelData): PortfolioResult => {
       weights: propertyNames.map((name, i) => ({
         property: name,
         weight: weights[i], // Бинарное значение: 0 или 1
+        risk: math.round(propertyRisks[i] * 10000) / 10000
       })),
       expectedReturn: math.round(expectedReturn * 10000) / 10000, // Округление до 4 знаков
       variance: math.round(variance * 10000) / 10000, // Округление до 4 знаков

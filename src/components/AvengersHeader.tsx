@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Shield } from 'lucide-react';
 
 const AvengersHeader = () => {
   return (
@@ -8,8 +7,12 @@ const AvengersHeader = () => {
       <div className="avengers-container">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center gap-3 mb-4 md:mb-0">
-            <div className="p-1.5 bg-gradient-to-br from-avengers-red via-avengers-blue to-avengers-gold rounded-full">
-              <Shield className="h-8 w-8 text-white" />
+            <div className="p-1 rounded-full">
+              <img 
+                src="/lovable-uploads/b0d7c294-718b-437e-93e8-2d1a2e0ecf69.png" 
+                alt="Arc Reactor" 
+                className="h-12 w-12 object-cover"
+              />
             </div>
             <div>
               <h1 className="text-2xl md:text-3xl font-bold tracking-tight avengers-title">
