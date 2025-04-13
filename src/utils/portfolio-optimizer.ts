@@ -47,11 +47,10 @@ export const classicalOptimization = (data: ExcelData): PortfolioResult => {
   const startTime = performance.now();
   
   try {
-    const { properties, correlationMatrix, propertyNames } = data;
+    const { properties, covarianceMatrix, propertyNames } = data;
     const options = getStoredOptions();
     
-    // Use correlation matrix as covariance matrix (assuming unit variances)
-    const covarianceMatrix = correlationMatrix;
+    // Use covariance matrix
     const n = properties.length;
     
     // Define maximum number of assets to select (using stored preferences)
@@ -153,11 +152,10 @@ export const bruteForceOptimization = (data: ExcelData): PortfolioResult => {
   const startTime = performance.now();
   
   try {
-    const { properties, correlationMatrix, propertyNames } = data;
+    const { properties, covarianceMatrix, propertyNames } = data;
     const options = getStoredOptions();
     
-    // Use correlation matrix as covariance matrix
-    const covarianceMatrix = correlationMatrix;
+    // Use covariance matrix
     const n = properties.length;
     
     // Define maximum number of assets to select (using stored preferences)
