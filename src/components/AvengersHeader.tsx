@@ -9,7 +9,7 @@ const AvengersHeader = () => {
           <div className="flex items-center gap-3 mb-4 md:mb-0">
             <div className="p-1 rounded-full">
               <img 
-                src="/lovable-uploads/a7e72d75-b14a-423d-a2c1-aca2565a64e1.png" 
+                src="/lovable-uploads/15d691f2-db4b-4621-bf84-0900293313fb.png" 
                 alt="Proof that Tony Stark has a heart" 
                 className="h-12 w-12 object-cover"
               />
